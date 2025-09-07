@@ -1,7 +1,9 @@
-# Delete
-book.delete()
-# Output: (1, {'bookshelf.Book': 1})
+# Delete Book
 
-# Confirm deletion
+```python
+from books_app.models import Book
+book = Book.objects.get(title="Nineteen Eighty-Four")
+book.delete()
 Book.objects.all()
-# Output: <QuerySet []>
+Expected Output
+<QuerySet []>

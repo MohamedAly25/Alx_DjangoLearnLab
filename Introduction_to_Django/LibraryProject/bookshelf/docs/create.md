@@ -1,13 +1,9 @@
-  GNU nano 8.5                     docs/create.md                     Modified
 # Create Book
 
 ```python
-from bookshelf.models import Book
-
-book = Book.objects.create(
-    title="1984",
-    author="George Orwell",
-    publication_year=1949
-)
+from books_app.models import Book
+book = Book.objects.create(title="1984", author="George Orwell", publication_year=1949)
 book
 
+Expected Output
+<Book: 1984 by George Orwell (1949)>
