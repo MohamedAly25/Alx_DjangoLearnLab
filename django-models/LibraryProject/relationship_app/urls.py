@@ -1,10 +1,9 @@
 from django.urls import path
+from . import views
 from django.contrib.auth import views as auth_views
 from .views import register
-from .views import list_books
+from .views import list_books   
 from .views import LibraryDetailView
-from django.urls import path
-from . import views
 
 
 urlpatterns = [
@@ -21,4 +20,10 @@ urlpatterns = [
     path("role/admin/", views.admin_view, name="admin_view"),
     path("role/librarian/", views.librarian_view, name="librarian_view"),
     path("role/member/", views.member_view, name="member_view"),
+
+
+    path("add/", views.add_book, name="add_book"),
+    path("edit/<int:pk>/", views.edit_book, name="edit_book"),
+    path("delete/<int:pk>/", views.delete_book, name="delete_book"),
+
 ]
