@@ -7,47 +7,10 @@ class CustomUserManager(BaseUserManager):
 
     use_in_migrations = True
 
-    def _create_user(self, username, email, password, **extra_fields):
-        if not username:
-            raise ValueError('The given username must be set')
-        if not email:
-            raise ValueError('Users must have an email address')
-        email = self.normalize_email(email)
-        user = self.model(username=username, email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+"""
+This app previously contained the CustomUser model. The model has been
+moved to `bookshelf.models.CustomUser` and `AUTH_USER_MODEL` points there.
 
-    def create_user(self, username, email=None, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
-        extra_fields.setdefault('is_active', True)
-        return self._create_user(username, email, password, **extra_fields)
-
-    def create_superuser(self, username, email=None, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
-
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
-
-        return self._create_user(username, email, password, **extra_fields)
-
-
-class CustomUser(AbstractUser):
-    """Custom user extending AbstractUser with extra profile fields."""
-
-    date_of_birth = models.DateField(null=True, blank=True)
-    profile_photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
-
-    # Require email when creating superusers via command line
-    REQUIRED_FIELDS = ['email']
-
-    objects = CustomUserManager()
-
-    def __str__(self):
-        return self.username
+Keep this file present if other app-specific models are added here.
+"""
     
