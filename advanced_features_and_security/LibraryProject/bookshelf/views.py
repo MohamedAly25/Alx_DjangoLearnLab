@@ -4,12 +4,35 @@ from .models import Book
 from .forms import BookForm
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
+from .forms import ExampleForm
+from django.db.models import Q
+from django.http import HttpResponseBadRequest
 
 
 @permission_required('bookshelf.can_view', raise_exception=True)
 def book_list(request):
-	books = Book.objects.all()
+	# Support simple search via ?q=; use ORM filtering to avoid SQL injection
+	query = request.GET.get('q', '').strip()
+	if query:
+		books = Book.objects.filter(title__icontains=query)
+	else:
+		books = Book.objects.all()
 	return render(request, 'bookshelf/book_list.html', {'books': books})
+
+
+@permission_required('bookshelf.can_view', raise_exception=True)
+def example_form_view(request):
+	# Demonstrates CSRF protection and form validation using ExampleForm
+	if request.method == 'POST':
+		form = ExampleForm(request.POST)
+		if form.is_valid():
+			# For demo purposes, simply re-render the form with a success message
+			return render(request, 'bookshelf/form_example.html', {'form': form, 'success': True})
+		else:
+			return render(request, 'bookshelf/form_example.html', {'form': form})
+	else:
+		form = ExampleForm()
+	return render(request, 'bookshelf/form_example.html', {'form': form})
 
 
 @permission_required('bookshelf.can_create', raise_exception=True)
