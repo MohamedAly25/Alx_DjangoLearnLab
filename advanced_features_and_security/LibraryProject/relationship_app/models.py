@@ -16,10 +16,16 @@ class Book(models.Model):
     published_date = models.DateField()
 
     class Meta:
+        # Custom permissions used by the app. We keep the legacy permission
+        # names for backward compatibility and add the PRD-specified ones.
         permissions = [
             ("can_add_book", "Can add book"),
             ("can_change_book", "Can change book"),
             ("can_delete_book", "Can delete book"),
+            ("can_view", "Can view book"),
+            ("can_create", "Can create book"),
+            ("can_edit", "Can edit book"),
+            ("can_delete", "Can delete book (alias)"),
         ]
 
     def __str__(self):
