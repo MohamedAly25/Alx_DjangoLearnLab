@@ -22,8 +22,9 @@ def is_member(user):
     return hasattr(user, "userprofile") and user.userprofile.role == "Member"
 
 
+@permission_required('relationship_app.can_view', raise_exception=True)
 def list_books(request):
-    books = Book.objects.all()   
+    books = Book.objects.all()
     return render(request, "relationship_app/list_books.html", {"books": books})
 
 class LibraryDetailView(DetailView):
