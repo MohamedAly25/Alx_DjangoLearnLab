@@ -14,3 +14,16 @@ class BookForm(forms.ModelForm):
         if not title:
             raise forms.ValidationError('Title cannot be empty')
         return title
+
+
+class ExampleForm(forms.Form):
+    """Simple example form used for demonstrating CSRF and validation."""
+
+    name = forms.CharField(max_length=100)
+    email = forms.EmailField()
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '').strip()
+        if not name:
+            raise forms.ValidationError('Name is required')
+        return name
