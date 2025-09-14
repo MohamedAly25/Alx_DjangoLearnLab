@@ -28,16 +28,33 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # Security settings for production. These are recommended best-practices.
-# When deploying, set DEBUG = False and configure ALLOWED_HOSTS properly.
+# IMPORTANT: Only enable these settings in production (DEBUG = False) and
+# after you've configured HTTPS at the proxy/webserver level (Nginx/Apache).
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Ensure cookies are only sent over HTTPS in production
+# These should be True when the site is served over HTTPS.
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
-# HTTP Strict Transport Security
+# Prevent CSRF/Session cookies being sent in cross-site contexts unless
+# explicitly required. 'Lax' is a reasonable default for most sites.
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Redirect all non-HTTPS requests to HTTPS. Make sure this is only enabled
+# after you have a TLS certificate configured on your web server or proxy.
+SECURE_SSL_REDIRECT = True
+
+# If Django is behind a proxy/load balancer (e.g., Nginx), set this header
+# so Django knows the original request scheme. Adjust the header name if
+# your proxy uses a different header.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# HTTP Strict Transport Security (HSTS). Keep conservative values while
+# testing; 31536000 (1 year) is appropriate for production after verification.
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True

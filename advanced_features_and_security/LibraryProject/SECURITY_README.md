@@ -30,3 +30,11 @@ This project has implemented a set of security best practices for Django. Summar
 - Install and configure `django-csp` for a more robust CSP policy management.
 - Configure HTTPS for production and then enable HSTS and secure cookies.
 - Add automated tests for CSRF, form validation, and permission checks.
+
+6) HTTPS enforcement (added)
+- `SECURE_SSL_REDIRECT = True` has been set in `settings.py` to redirect HTTP -> HTTPS.
+- `SECURE_HSTS_SECONDS`, `SECURE_HSTS_INCLUDE_SUBDOMAINS`, and `SECURE_HSTS_PRELOAD` are configured.
+- `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, and `SESSION_COOKIE_SAMESITE`/`CSRF_COOKIE_SAMESITE` are set to help protect cookies.
+- `SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')` is set so Django recognizes proxied HTTPS requests.
+
+See `DEPLOYMENT_HTTPS.md` for detailed instructions on obtaining TLS certificates (Let's Encrypt + Certbot) and example Nginx/Apache configurations. Be sure to set `DEBUG = False` and add your domain to `ALLOWED_HOSTS` before enabling these in production.
