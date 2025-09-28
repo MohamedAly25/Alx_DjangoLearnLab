@@ -50,3 +50,9 @@ class DeleteView(generics.DestroyAPIView):
 	queryset = Book.objects.select_related('author').all()
 	serializer_class = BookSerializer
 	permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class CreateView(generics.CreateAPIView):
+	queryset = Book.objects.select_related('author').all()
+	serializer_class = BookSerializer
+	permission_classes = [IsAuthenticatedOrReadOnly]
