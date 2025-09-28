@@ -31,9 +31,9 @@ class BookViewTests(APITestCase):
         url = reverse('book-list')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertIsInstance(resp.json(), list)
+        self.assertIsInstance(resp.data, list)
         # Check keys in first item
-        first = resp.json()[0]
+        first = resp.data[0]
         self.assertIn('id', first)
         self.assertIn('title', first)
         self.assertIn('publication_year', first)
@@ -43,7 +43,7 @@ class BookViewTests(APITestCase):
         url = reverse('book-detail', args=[self.book.id])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        data = resp.json()
+        data = resp.data
         self.assertEqual(data['title'], 'Pride and Prejudice')
         self.assertEqual(data['publication_year'], 1813)
         self.assertEqual(data['author'], self.author.id)
@@ -86,22 +86,22 @@ class BookViewTests(APITestCase):
         payload = {'title': 'Future Book', 'publication_year': next_year, 'author': self.author.id}
         resp = self.client.post(url, payload, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('publication_year', resp.json())
+        self.assertIn('publication_year', resp.data)
 
     def test_filter_search_order_behave_expected(self):
         url = reverse('book-list')
         # Filter by title
         resp = self.client.get(url, {'title': 'Pride and Prejudice'})
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(resp.json()), 1)
+        self.assertEqual(len(resp.data), 1)
 
         # Search by author name
         resp = self.client.get(url, {'search': 'Jane'})
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(resp.json()), 2)
+        self.assertGreaterEqual(len(resp.data), 2)
 
         # Order by publication_year desc
         resp = self.client.get(url, {'ordering': '-publication_year'})
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        years = [b['publication_year'] for b in resp.json()]
+        years = [b['publication_year'] for b in resp.data]
         self.assertEqual(years, sorted(years, reverse=True))
