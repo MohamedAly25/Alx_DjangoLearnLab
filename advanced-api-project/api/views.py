@@ -1,5 +1,5 @@
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
@@ -43,16 +43,19 @@ class DetailView(generics.RetrieveAPIView):
 class UpdateView(generics.UpdateAPIView):
 	queryset = Book.objects.select_related('author').all()
 	serializer_class = BookSerializer
-	permission_classes = [IsAuthenticatedOrReadOnly]
+	# Only authenticated users can update
+	permission_classes = [IsAuthenticated]
 
 
 class DeleteView(generics.DestroyAPIView):
 	queryset = Book.objects.select_related('author').all()
 	serializer_class = BookSerializer
-	permission_classes = [IsAuthenticatedOrReadOnly]
+	# Only authenticated users can delete
+	permission_classes = [IsAuthenticated]
 
 
 class CreateView(generics.CreateAPIView):
 	queryset = Book.objects.select_related('author').all()
 	serializer_class = BookSerializer
-	permission_classes = [IsAuthenticatedOrReadOnly]
+	# Only authenticated users can create
+	permission_classes = [IsAuthenticated]
