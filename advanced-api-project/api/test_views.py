@@ -1,11 +1,12 @@
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
 import datetime
 
 
-class BookViewTests(TestCase):
+class BookViewTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
         # Create a user for authentication when needed
