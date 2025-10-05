@@ -14,6 +14,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import CommentForm
 from .models import Comment
 from django.views import View
+from taggit.models import Tag
 
 
 
@@ -80,6 +81,32 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 def posts_by_tag(request, tag_name):
 	posts = Post.objects.filter(tags__name__in=[tag_name])
 	return render(request, 'blog/tag_list.html', {'posts': posts, 'tag': tag_name})
+
+
+class PostByTagListView(ListView):
+	model = Post
+	template_name = 'blog/tag_list.html'
+	context_object_name = 'posts'
+
+	def get_queryset(self):
+		slug = self.kwargs.get('tag_slug')
+		return (
+			Post.objects.select_related('author')
+			.prefetch_related('tags')
+			.filter(tags__slug=slug)
+			.distinct()
+			.order_by('-published_date')
+		)
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		slug = self.kwargs.get('tag_slug')
+		try:
+			tag = Tag.objects.get(slug=slug)
+			context['tag'] = tag.name
+		except Tag.DoesNotExist:
+			context['tag'] = slug
+		return context
 
 
 def search(request):
