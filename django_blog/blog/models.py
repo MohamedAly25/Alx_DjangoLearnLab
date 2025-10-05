@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.urls import reverse
 from taggit.managers import TaggableManager
 
@@ -9,7 +9,7 @@ class Post(models.Model):
 	content = models.TextField()
 	published_date = models.DateTimeField(null=True, blank=True)
 	author = models.ForeignKey(
-		get_user_model(), on_delete=models.CASCADE, related_name='posts'
+		User, on_delete=models.CASCADE, related_name='posts'
 	)
 
 	class Meta:
@@ -27,7 +27,7 @@ class Post(models.Model):
 
 class Comment(models.Model):
 	post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-	author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='comments')
+	author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
 	content = models.TextField()
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
