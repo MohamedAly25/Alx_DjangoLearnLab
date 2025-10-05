@@ -6,10 +6,16 @@ app_name = 'blog'
 
 urlpatterns = [
     path('', views.PostListView.as_view(), name='blog-home'),
-    path('post/new/', views.PostCreateView.as_view(), name='post-create'),
-    path('post/<int:pk>/update/', views.PostUpdateView.as_view(), name='post-update'),
-    path('post/<int:pk>/delete/', views.PostDeleteView.as_view(), name='post-delete'),
-    path('post/<int:pk>/', views.PostDetailView.as_view(), name='post-detail'),
+    path('posts/', views.PostListView.as_view(), name='post-list'),
+    path('posts/new/', views.PostCreateView.as_view(), name='post-create'),
+    path('posts/<int:pk>/', views.PostDetailView.as_view(), name='post-detail'),
+    path('posts/<int:pk>/edit/', views.PostUpdateView.as_view(), name='post-update'),
+    path('posts/<int:pk>/delete/', views.PostDeleteView.as_view(), name='post-delete'),
+    # Legacy URLs for compatibility
+    path('post/new/', views.PostCreateView.as_view(), name='post-create-legacy'),
+    path('post/<int:pk>/update/', views.PostUpdateView.as_view(), name='post-update-legacy'),
+    path('post/<int:pk>/delete/', views.PostDeleteView.as_view(), name='post-delete-legacy'),
+    path('post/<int:pk>/', views.PostDetailView.as_view(), name='post-detail-legacy'),
 
     # Comments with RESTful structure
     path('post/<int:pk>/comments/new/', views.CommentCreateView.as_view(), name='comment-create'),
