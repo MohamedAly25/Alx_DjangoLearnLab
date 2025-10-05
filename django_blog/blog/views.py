@@ -83,12 +83,33 @@ def posts_by_tag(request, tag_name):
 
 
 def search(request):
-	q = request.GET.get('q', '').strip()
-	results = Post.objects.none()
-	if q:
-		from django.db.models import Q
-		results = Post.objects.filter(Q(title__icontains=q) | Q(content__icontains=q) | Q(tags__name__icontains=q)).distinct()
-	return render(request, 'blog/search_results.html', {'results': results, 'query': q})
+    """Search for posts by title, content, author, or tags."""
+    q = request.GET.get('q', '').strip()
+    results = Post.objects.none()
+    if q:
+        # Move import to top of file in production
+        from django.db.models import Q
+        results = (
+            Post.objects.select_related('author')
+            .prefetch_related('tags')
+            .filter(
+                Q(title__icontains=q) |
+                Q(content__icontains=q) |
+                Q(tags__name__icontains=q) |
+                Q(author__username__icontains=q)
+            )
+            .distinct()
+            .order_by('-published_date')
+        )
+    return render(
+        request,
+        'blog/search_results.html',
+        {
+            'results': results,
+            'query': q,
+            'total_count': results.count() if q else 0,
+        }
+    )
 
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -102,8 +123,8 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 class CommentCreateView(LoginRequiredMixin, View):
-	def post(self, request, post_pk):
-		post = get_object_or_404(Post, pk=post_pk)
+	def post(self, request, pk):
+		post = get_object_or_404(Post, pk=pk)
 		form = CommentForm(request.POST)
 		if form.is_valid():
 			comment = form.save(commit=False)
@@ -111,7 +132,7 @@ class CommentCreateView(LoginRequiredMixin, View):
 			comment.post = post
 			comment.save()
 		# After creating (or failing validation), redirect back to the post detail
-		return redirect('blog:post-detail', pk=post_pk)
+		return redirect('blog:post-detail', pk=pk)
 
 
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -126,11 +147,6 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 		comment = self.get_object()
 		return comment.author == self.request.user
 
-	def get_object(self, queryset=None):
-		# Verify the comment belongs to the specified post
-		post_pk = self.kwargs.get('post_pk')
-		return get_object_or_404(Comment, pk=self.kwargs.get('pk'), post__pk=post_pk)
-
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 	model = Comment
@@ -142,11 +158,6 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 	def test_func(self):
 		comment = self.get_object()
 		return comment.author == self.request.user
-
-	def get_object(self, queryset=None):
-		# Verify the comment belongs to the specified post
-		post_pk = self.kwargs.get('post_pk')
-		return get_object_or_404(Comment, pk=self.kwargs.get('pk'), post__pk=post_pk)
 
 
 def register(request):

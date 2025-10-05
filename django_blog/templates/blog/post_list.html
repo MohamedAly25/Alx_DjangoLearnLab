@@ -1,23 +1,47 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Posts - Django Blog</title>
-  <link rel="stylesheet" href="/static/css/styles.css">
-</head>
-<body>
-  <h1>Posts</h1>
-  <p><a href="{% url 'blog:post_create' %}">Create new post</a></p>
-  <ul>
-  {% for post in posts %}
-      <li><a href="{% url 'blog:post_detail' post.pk %}">{{ post.title }}</a> - {{ post.author }} - {{ post.published_date }}</li>
-      {% if post.tags.all %}
-        <p>Tags: {% for tag in post.tags.all %}<a href="{% url 'blog:posts_by_tag' tag.slug %}">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-      {% endif %}
-  {% empty %}
-    <li>No posts yet.</li>
-  {% endfor %}
-  </ul>
-  <p><a href="/">Home</a></p>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="posts-list">
+  <div class="header">
+    <h1>Blog Posts</h1>
+    {% if user.is_authenticated %}
+      <p><a href="{% url 'blog:post-create' %}" class="button">Create New Post</a></p>
+    {% endif %}
+  </div>
+
+  {% if posts %}
+    <div class="posts">
+      {% for post in posts %}
+        <article class="post">
+          <h2><a href="{% url 'blog:post-detail' post.pk %}">{{ post.title }}</a></h2>
+          <div class="meta">
+            <span class="author">By {{ post.author }}</span>
+            {% if post.published_date %}
+              <span class="date">on {{ post.published_date|date:"F j, Y" }}</span>
+            {% endif %}
+          </div>
+          
+          {% if post.tags.all %}
+            <div class="tags">
+              {% for tag in post.tags.all %}
+                <a href="{% url 'blog:posts_by_tag' tag.slug %}" class="tag">{{ tag.name }}</a>
+              {% endfor %}
+            </div>
+          {% endif %}
+          
+          <p class="excerpt">{{ post.content|truncatewords:50 }}</p>
+          
+          {% if user == post.author %}
+            <div class="actions">
+              <a href="{% url 'blog:post-update' post.pk %}">Edit</a> |
+              <a href="{% url 'blog:post-delete' post.pk %}">Delete</a>
+            </div>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="no-posts">No posts yet. {% if user.is_authenticated %}Why not <a href="{% url 'blog:post-create' %}">create one</a>?{% endif %}</p>
+  {% endif %}
+</div>
+{% endblock %}

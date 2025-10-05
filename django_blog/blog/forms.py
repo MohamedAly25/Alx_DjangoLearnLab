@@ -2,30 +2,20 @@ from django import forms
 from .models import Post, Comment
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from taggit.forms import TagWidget
 
 
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'content', 'published_date']
+        fields = ['title', 'content', 'published_date', 'tags']
         widgets = {
             'published_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'tags': TagWidget(attrs={'class': 'tag-input', 'placeholder': 'Add tags...'}),
         }
-
-    # optional tags input (comma separated)
-    tags = forms.CharField(required=False, help_text='Comma-separated tags', label='Tags')
-
-    def __init__(self, *args, **kwargs):
-        # if editing an instance, pre-fill tags field
-        instance = kwargs.get('instance')
-        super().__init__(*args, **kwargs)
-        if instance and hasattr(instance, 'tags'):
-            try:
-                tag_names = instance.tags.names()
-                self.fields['tags'].initial = ', '.join(tag_names)
-            except Exception:
-                # taggit may not be installed in some environments during static analysis
-                self.fields['tags'].initial = ''
+        help_texts = {
+            'tags': 'Enter tags separated by commas.',
+        }
 
 
 

@@ -1,10 +1,36 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<h2>{% if object %}Edit{% else %}New{% endif %} Post</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Save</button>
-</form>
-<p><a href="{% url 'blog:post_list' %}">Back to posts</a></p>
+<div class="post-form">
+  <h2>{% if object %}Edit{% else %}New{% endif %} Post</h2>
+  
+  <form method="post" class="form">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="errors">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+    
+    {% for field in form %}
+      <div class="field">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}
+          <div class="help-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% if field.errors %}
+          <div class="field-errors">
+            {{ field.errors }}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+    
+    <div class="buttons">
+      <button type="submit" class="primary">{% if object %}Update{% else %}Create{% endif %} Post</button>
+      <a href="{% url 'blog:blog-home' %}" class="cancel">Cancel</a>
+    </div>
+  </form>
+</div>
 {% endblock %}
