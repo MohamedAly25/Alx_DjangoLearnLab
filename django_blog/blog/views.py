@@ -11,6 +11,10 @@ from django.views.generic import (
 	ListView, DetailView, CreateView, UpdateView, DeleteView
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from .forms import CommentForm
+from .models import Comment
+from django.views import View
+
 
 
 def home(request):
@@ -31,6 +35,11 @@ class PostListView(ListView):
 class PostDetailView(DetailView):
 	model = Post
 	template_name = 'blog/post_detail.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		context['comment_form'] = CommentForm()
+		return context
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -61,6 +70,43 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 	def test_func(self):
 		post = self.get_object()
 		return post.author == self.request.user
+
+
+class CommentCreateView(LoginRequiredMixin, View):
+	def post(self, request, post_pk):
+		post = get_object_or_404(Post, pk=post_pk)
+		form = CommentForm(request.POST)
+		if form.is_valid():
+			comment = form.save(commit=False)
+			comment.author = request.user
+			comment.post = post
+			comment.save()
+		return redirect('blog:post_detail', pk=post_pk)
+
+
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+	model = Comment
+	form_class = CommentForm
+	template_name = 'blog/comment_form.html'
+
+	def get_success_url(self):
+		return self.object.post.get_absolute_url() if hasattr(self.object.post, 'get_absolute_url') else reverse_lazy('blog:post_detail', kwargs={'pk': self.object.post.pk})
+
+	def test_func(self):
+		comment = self.get_object()
+		return comment.author == self.request.user
+
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+	model = Comment
+	template_name = 'blog/comment_confirm_delete.html'
+
+	def get_success_url(self):
+		return reverse_lazy('blog:post_detail', kwargs={'pk': self.object.post.pk})
+
+	def test_func(self):
+		comment = self.get_object()
+		return comment.author == self.request.user
 
 
 def register(request):
