@@ -13,9 +13,8 @@ _TAGWIDGET_CHECKER_NOOP = TagWidget()
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'content', 'published_date', 'tags']
+        fields = ['title', 'content', 'tags']
         widgets = {
-            'published_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'tags': TagWidget(attrs={'class': 'tag-input', 'placeholder': 'Add tags...'}),
         }
         help_texts = {
