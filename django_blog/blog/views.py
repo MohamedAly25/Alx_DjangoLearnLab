@@ -53,7 +53,8 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 		tags = form.cleaned_data.get('tags')
 		if tags:
 			tag_list = [t.strip() for t in tags.split(',') if t.strip()]
-			self.object.tags.set(*tag_list)
+			# TaggableManager.set expects an iterable of tag names/objects
+			self.object.tags.set(tag_list)
 		return response
 
 
@@ -71,7 +72,8 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 		tags = form.cleaned_data.get('tags')
 		if tags is not None:
 			tag_list = [t.strip() for t in tags.split(',') if t.strip()]
-			self.object.tags.set(*tag_list)
+			# TaggableManager.set expects an iterable of tag names/objects
+			self.object.tags.set(tag_list)
 		return response
 
 
@@ -92,7 +94,7 @@ def search(request):
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 	model = Post
 	template_name = 'blog/post_confirm_delete.html'
-	success_url = reverse_lazy('blog:post_list')
+	success_url = reverse_lazy('blog:blog-home')
 
 	def test_func(self):
 		post = self.get_object()
@@ -108,7 +110,8 @@ class CommentCreateView(LoginRequiredMixin, View):
 			comment.author = request.user
 			comment.post = post
 			comment.save()
-		return redirect('blog:post_detail', pk=post_pk)
+		# After creating (or failing validation), redirect back to the post detail
+		return redirect('blog:post-detail', pk=post_pk)
 
 
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -117,7 +120,7 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 	template_name = 'blog/comment_form.html'
 
 	def get_success_url(self):
-		return self.object.post.get_absolute_url() if hasattr(self.object.post, 'get_absolute_url') else reverse_lazy('blog:post_detail', kwargs={'pk': self.object.post.pk})
+		return self.object.post.get_absolute_url() if hasattr(self.object.post, 'get_absolute_url') else reverse_lazy('blog:post-detail', kwargs={'pk': self.object.post.pk})
 
 	def test_func(self):
 		comment = self.get_object()
@@ -129,7 +132,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 	template_name = 'blog/comment_confirm_delete.html'
 
 	def get_success_url(self):
-		return reverse_lazy('blog:post_detail', kwargs={'pk': self.object.post.pk})
+		return reverse_lazy('blog:post-detail', kwargs={'pk': self.object.post.pk})
 
 	def test_func(self):
 		comment = self.get_object()
@@ -142,7 +145,7 @@ def register(request):
 		if form.is_valid():
 			user = form.save()
 			login(request, user)
-			return redirect('blog:home')
+			return redirect('blog:blog-home')
 	else:
 		form = RegistrationForm()
 	return render(request, 'registration/register.html', {'form': form})
