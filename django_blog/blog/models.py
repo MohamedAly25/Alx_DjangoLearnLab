@@ -36,4 +36,6 @@ class Comment(models.Model):
 		ordering = ['created_at']
 
 	def __str__(self):
-		return f'Comment by {self.author} on {self.post}'
+		# include a short excerpt of the comment content for readability
+		excerpt = (self.content[:47] + '...') if len(self.content) > 50 else self.content
+		return f'Comment by {self.author} on {self.post}: {excerpt}'
