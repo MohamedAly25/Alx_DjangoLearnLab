@@ -49,7 +49,12 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 	def form_valid(self, form):
 		form.instance.author = self.request.user
-		return super().form_valid(form)
+		response = super().form_valid(form)
+		tags = form.cleaned_data.get('tags')
+		if tags:
+			tag_list = [t.strip() for t in tags.split(',') if t.strip()]
+			self.object.tags.set(*tag_list)
+		return response
 
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -60,6 +65,28 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 	def test_func(self):
 		post = self.get_object()
 		return post.author == self.request.user
+    
+	def form_valid(self, form):
+		response = super().form_valid(form)
+		tags = form.cleaned_data.get('tags')
+		if tags is not None:
+			tag_list = [t.strip() for t in tags.split(',') if t.strip()]
+			self.object.tags.set(*tag_list)
+		return response
+
+
+def posts_by_tag(request, tag_name):
+	posts = Post.objects.filter(tags__name__in=[tag_name])
+	return render(request, 'blog/tag_list.html', {'posts': posts, 'tag': tag_name})
+
+
+def search(request):
+	q = request.GET.get('q', '').strip()
+	results = Post.objects.none()
+	if q:
+		from django.db.models import Q
+		results = Post.objects.filter(Q(title__icontains=q) | Q(content__icontains=q) | Q(tags__name__icontains=q)).distinct()
+	return render(request, 'blog/search_results.html', {'results': results, 'query': q})
 
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):

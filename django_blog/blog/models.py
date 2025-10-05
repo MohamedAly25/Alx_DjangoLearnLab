@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from taggit.managers import TaggableManager
 
 
 class Post(models.Model):
@@ -19,6 +20,9 @@ class Post(models.Model):
 
 	def get_absolute_url(self):
 		return reverse('blog:post_detail', kwargs={'pk': self.pk})
+
+	# tags
+	tags = TaggableManager(blank=True)
 
 
 class Comment(models.Model):

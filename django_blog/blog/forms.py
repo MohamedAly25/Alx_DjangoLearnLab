@@ -15,6 +15,21 @@ class PostForm(forms.ModelForm):
             'published_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
 
+    # optional tags input (comma separated)
+    tags = forms.CharField(required=False, help_text='Comma-separated tags', label='Tags')
+
+    def __init__(self, *args, **kwargs):
+        # if editing an instance, pre-fill tags field
+        instance = kwargs.get('instance')
+        super().__init__(*args, **kwargs)
+        if instance and hasattr(instance, 'tags'):
+            try:
+                tag_names = instance.tags.names()
+                self.fields['tags'].initial = ', '.join(tag_names)
+            except Exception:
+                # taggit may not be installed in some environments during static analysis
+                self.fields['tags'].initial = ''
+
 
 
 class RegistrationForm(UserCreationForm):

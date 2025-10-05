@@ -12,6 +12,10 @@
     {% else %}
       <a href="{% url 'blog:login' %}">Login</a> | <a href="{% url 'blog:register' %}">Register</a>
     {% endif %}
+    <form method="get" action="{% url 'blog:search' %}" style="display:inline; margin-left:1rem;">
+      <input type="search" name="q" placeholder="Search posts..." value="{{ request.GET.q }}">
+      <button type="submit">Search</button>
+    </form>
   </nav>
   <hr>
   {% block content %}{% endblock %}
