@@ -12,9 +12,10 @@ urlpatterns = [
     path('post/<int:pk>/', views.PostDetailView.as_view(), name='post-detail'),
 
     # Comments (keep logical structure)
-    path('post/<int:post_pk>/comments/new/', views.CommentCreateView.as_view(), name='comment_create'),
-    path('comments/<int:pk>/edit/', views.CommentUpdateView.as_view(), name='comment_update'),
-    path('comments/<int:pk>/delete/', views.CommentDeleteView.as_view(), name='comment_delete'),
+    # Nest comment operations under their parent post for clearer hierarchy
+    path('post/<int:post_pk>/comment/new/', views.CommentCreateView.as_view(), name='comment-create'),
+    path('post/<int:post_pk>/comment/<int:pk>/edit/', views.CommentUpdateView.as_view(), name='comment-edit'),
+    path('post/<int:post_pk>/comment/<int:pk>/delete/', views.CommentDeleteView.as_view(), name='comment-delete'),
 
     # Tags & search
     path('tags/<slug:tag_name>/', views.posts_by_tag, name='posts_by_tag'),

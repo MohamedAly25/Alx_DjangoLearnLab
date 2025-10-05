@@ -120,11 +120,16 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 	template_name = 'blog/comment_form.html'
 
 	def get_success_url(self):
-		return self.object.post.get_absolute_url() if hasattr(self.object.post, 'get_absolute_url') else reverse_lazy('blog:post-detail', kwargs={'pk': self.object.post.pk})
+		return reverse_lazy('blog:post-detail', kwargs={'pk': self.object.post.pk})
 
 	def test_func(self):
 		comment = self.get_object()
 		return comment.author == self.request.user
+
+	def get_object(self, queryset=None):
+		# Verify the comment belongs to the specified post
+		post_pk = self.kwargs.get('post_pk')
+		return get_object_or_404(Comment, pk=self.kwargs.get('pk'), post__pk=post_pk)
 
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -137,6 +142,11 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 	def test_func(self):
 		comment = self.get_object()
 		return comment.author == self.request.user
+
+	def get_object(self, queryset=None):
+		# Verify the comment belongs to the specified post
+		post_pk = self.kwargs.get('post_pk')
+		return get_object_or_404(Comment, pk=self.kwargs.get('pk'), post__pk=post_pk)
 
 
 def register(request):
