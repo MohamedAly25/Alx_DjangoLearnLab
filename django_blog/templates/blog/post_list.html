@@ -7,9 +7,10 @@
 </head>
 <body>
   <h1>Posts</h1>
+  <p><a href="{% url 'blog:post_create' %}">Create new post</a></p>
   <ul>
   {% for post in posts %}
-    <li>{{ post.title }} - {{ post.author }} - {{ post.published_date }}</li>
+      <li><a href="{% url 'blog:post_detail' post.pk %}">{{ post.title }}</a> - {{ post.author }} - {{ post.published_date }}</li>
   {% empty %}
     <li>No posts yet.</li>
   {% endfor %}
