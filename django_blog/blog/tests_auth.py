@@ -20,7 +20,7 @@ class AuthenticationTests(TestCase):
     def test_login_page_loads(self):
         response = self.client.get(self.login_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'registration/login.html')
+        self.assertTemplateUsed(response, 'login.html')
 
     def test_login_with_correct_credentials(self):
         response = self.client.post(self.login_url, {
@@ -41,12 +41,12 @@ class AuthenticationTests(TestCase):
         self.client.login(username='testuser', password='testpass123')
         response = self.client.post(self.logout_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'registration/logged_out.html')
+        self.assertTemplateUsed(response, 'logged_out.html')
 
     def test_register_page_loads(self):
         response = self.client.get(self.register_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'registration/register.html')
+        self.assertTemplateUsed(response, 'register.html')
 
     def test_register_with_valid_data(self):
         response = self.client.post(self.register_url, {

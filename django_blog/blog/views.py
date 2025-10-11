@@ -29,13 +29,13 @@ def post_list(request):
 
 class PostListView(ListView):
 	model = Post
-	template_name = 'blog/post_list.html'
+	template_name = 'post_list.html'
 	context_object_name = 'posts'
 
 
 class PostDetailView(DetailView):
 	model = Post
-	template_name = 'blog/post_detail.html'
+	template_name = 'post_detail.html'
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
@@ -46,7 +46,7 @@ class PostDetailView(DetailView):
 class PostCreateView(LoginRequiredMixin, CreateView):
 	model = Post
 	form_class = PostForm
-	template_name = 'blog/post_form.html'
+	template_name = 'post_form.html'
 
 	def form_valid(self, form):
 		form.instance.author = self.request.user
@@ -62,7 +62,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 	model = Post
 	form_class = PostForm
-	template_name = 'blog/post_form.html'
+	template_name = 'post_form.html'
 
 	def test_func(self):
 		post = self.get_object()
@@ -80,12 +80,12 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 def posts_by_tag(request, tag_name):
 	posts = Post.objects.filter(tags__name__in=[tag_name])
-	return render(request, 'blog/tag_list.html', {'posts': posts, 'tag': tag_name})
+	return render(request, 'tag_list.html', {'posts': posts, 'tag': tag_name})
 
 
 class PostByTagListView(ListView):
 	model = Post
-	template_name = 'blog/tag_list.html'
+	template_name = 'tag_list.html'
 	context_object_name = 'posts'
 
 	def get_queryset(self):
@@ -130,7 +130,7 @@ def search(request):
         )
     return render(
         request,
-        'blog/search_results.html',
+        'search_results.html',
         {
             'results': results,
             'query': q,
@@ -141,7 +141,7 @@ def search(request):
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 	model = Post
-	template_name = 'blog/post_confirm_delete.html'
+	template_name = 'post_confirm_delete.html'
 	success_url = reverse_lazy('blog:blog-home')
 
 	def test_func(self):
@@ -165,7 +165,7 @@ class CommentCreateView(LoginRequiredMixin, View):
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 	model = Comment
 	form_class = CommentForm
-	template_name = 'blog/comment_form.html'
+	template_name = 'comment_form.html'
 
 	def get_success_url(self):
 		return reverse_lazy('blog:post-detail', kwargs={'pk': self.object.post.pk})
@@ -177,7 +177,7 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 	model = Comment
-	template_name = 'blog/comment_confirm_delete.html'
+	template_name = 'comment_confirm_delete.html'
 
 	def get_success_url(self):
 		return reverse_lazy('blog:post-detail', kwargs={'pk': self.object.post.pk})
@@ -196,7 +196,7 @@ def register(request):
 			return redirect('blog:blog-home')
 	else:
 		form = RegistrationForm()
-	return render(request, 'registration/register.html', {'form': form})
+	return render(request, 'register.html', {'form': form})
 
 
 @login_required
@@ -208,5 +208,5 @@ def profile(request):
 			return redirect('blog:profile')
 	else:
 		form = ProfileForm(instance=request.user)
-	return render(request, 'registration/profile.html', {'form': form})
+	return render(request, 'profile.html', {'form': form})
 
