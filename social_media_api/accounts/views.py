@@ -1,4 +1,4 @@
-from rest_framework import status, generics
+from rest_framework import status, generics, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-from .models import User
+from .models import User as CustomUser
 from posts.models import Post
 from posts.serializers import PostSerializer
 from notifications.models import Notification
@@ -54,8 +54,8 @@ def profile(request):
 @permission_classes([IsAuthenticated])
 def follow(request, user_id):
     try:
-        user_to_follow = User.objects.get(id=user_id)
-    except User.DoesNotExist:
+        user_to_follow = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     
     if user_to_follow == request.user:
@@ -77,8 +77,8 @@ def follow(request, user_id):
 @permission_classes([IsAuthenticated])
 def unfollow(request, user_id):
     try:
-        user_to_unfollow = User.objects.get(id=user_id)
-    except User.DoesNotExist:
+        user_to_unfollow = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     
     if not request.user.following.filter(id=user_id).exists():
@@ -97,13 +97,13 @@ def feed(request):
 
 
 class FollowUserView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
-    queryset = User.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = CustomUser.objects.all()
 
     def post(self, request, user_id):
         try:
             user_to_follow = self.get_queryset().get(id=user_id)
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         
         if user_to_follow == request.user:
@@ -123,13 +123,13 @@ class FollowUserView(generics.GenericAPIView):
 
 
 class UnfollowUserView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
-    queryset = User.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = CustomUser.objects.all()
 
     def post(self, request, user_id):
         try:
             user_to_unfollow = self.get_queryset().get(id=user_id)
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         
         if not request.user.following.filter(id=user_id).exists():
