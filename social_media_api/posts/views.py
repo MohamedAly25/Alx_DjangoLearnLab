@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, generics
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view, permission_classes
@@ -76,3 +76,14 @@ def unlike_post(request, post_id):
         return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
     except Like.DoesNotExist:
         return Response({'error': 'Not liked'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FeedView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PostSerializer
+
+    def get(self, request):
+        following_users = request.user.following.all()
+        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)

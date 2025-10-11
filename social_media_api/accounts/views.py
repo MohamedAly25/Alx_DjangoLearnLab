@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -94,3 +94,46 @@ def feed(request):
     posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
+
+
+class FollowUserView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = User.objects.all()
+
+    def post(self, request, user_id):
+        try:
+            user_to_follow = self.get_queryset().get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if user_to_follow == request.user:
+            return Response({'error': 'Cannot follow yourself'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.user.following.filter(id=user_id).exists():
+            return Response({'error': 'Already following'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        request.user.following.add(user_to_follow)
+        Notification.objects.create(
+            recipient=user_to_follow,
+            actor=request.user,
+            verb='followed you',
+            target=user_to_follow
+        )
+        return Response({'message': f'Now following {user_to_follow.username}'})
+
+
+class UnfollowUserView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = User.objects.all()
+
+    def post(self, request, user_id):
+        try:
+            user_to_unfollow = self.get_queryset().get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if not request.user.following.filter(id=user_id).exists():
+            return Response({'error': 'Not following this user'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        request.user.following.remove(user_to_unfollow)
+        return Response({'message': f'Unfollowed {user_to_unfollow.username}'})
