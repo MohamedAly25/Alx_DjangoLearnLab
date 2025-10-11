@@ -3,10 +3,14 @@ from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer, LikeSerializer
 from notifications.models import Notification
 from django.contrib.contenttypes.models import ContentType
+
+# Add get_object_or_404 to generics module for compatibility
+generics.get_object_or_404 = get_object_or_404
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -44,11 +48,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
-def like_post(request, post_id):
-    try:
-        post = Post.objects.get(id=post_id)
-    except Post.DoesNotExist:
-        return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+def like_post(request, pk):
+    post = generics.get_object_or_404(Post, pk=pk)
     
     like, created = Like.objects.get_or_create(user=request.user, post=post)
     if created:
@@ -66,14 +67,12 @@ def like_post(request, post_id):
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
-def unlike_post(request, post_id):
+def unlike_post(request, pk):
+    post = generics.get_object_or_404(Post, pk=pk)
     try:
-        post = Post.objects.get(id=post_id)
         like = Like.objects.get(user=request.user, post=post)
         like.delete()
         return Response({'message': 'Post unliked'})
-    except Post.DoesNotExist:
-        return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
     except Like.DoesNotExist:
         return Response({'error': 'Not liked'}, status=status.HTTP_400_BAD_REQUEST)
 
